@@ -5,6 +5,7 @@ classify.py is an out-of-the-box image classifer callable from the command line.
 By default it configures and runs the Caffe reference ImageNet model.
 """
 import numpy as np
+import pandas as pd
 import os
 import sys
 import argparse
@@ -86,6 +87,17 @@ def main(argv):
         help="Image file extension to take as input when a directory " +
              "is given as the input file."
     )
+    parser.add_argument(
+        "--print_results",
+        action='store_true',
+        help="Write output text to stdout rather than serializing to a file."
+    )
+    parser.add_argument(
+        "--labels_file",
+        default=os.path.join(pycaffe_dir,
+                             "../data/ilsvrc12/synset_words.txt"),
+        help="Readable label definition file."
+    )
     args = parser.parse_args()
 
     image_dims = [int(s) for s in args.images_dim.split(',')]
@@ -132,6 +144,29 @@ def main(argv):
     # Save
     print("Saving results into %s" % args.output_file)
     np.save(args.output_file, predictions)
+
+    # Print results
+    if args.print_results:
+        scores = predictions.flatten()
+        with open(args.labels_file) as f:
+            labels_df = pd.DataFrame([
+                                         {
+                                             'synset_id': l.strip().split(' ')[0],
+                                             'name': ' '.join(l.strip().split(' ')[1:]).split(',')[0]
+                                         }
+                                         for l in f.readlines()
+                                         ])
+        labels = labels_df.sort('synset_id')['name'].values
+
+        indices = (-scores).argsort()[:5]
+        predictions = labels[indices]
+
+        meta = [
+            (p, '%.5f' % scores[i])
+            for i, p in zip(indices, predictions)
+            ]
+
+        print meta
 
 
 if __name__ == '__main__':
