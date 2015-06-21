@@ -92,6 +92,12 @@ def main(argv):
         action='store_true',
         help="Write output text to stdout rather than serializing to a file."
     )
+    parser.add_argument(
+        "--labels_file",
+        default=os.path.join(pycaffe_dir,
+                             "../data/ilsvrc12/synset_words.txt"),
+        help="Readable label definition file."
+    )
     args = parser.parse_args()
 
     image_dims = [int(s) for s in args.images_dim.split(',')]
