@@ -141,6 +141,11 @@ def main(argv):
     predictions = classifier.predict(inputs, not args.center_only)
     print("Done in %.2f s." % (time.time() - start))
 
+    # Save
+    print("Saving results into %s" % args.output_file)
+    np.save(args.output_file, predictions)
+
+    # Print results
     if args.print_results:
         scores = predictions.flatten()
         with open(args.labels_file) as f:
@@ -162,10 +167,6 @@ def main(argv):
             ]
 
         print meta
-
-    # Save
-    print("Saving results into %s" % args.output_file)
-    np.save(args.output_file, predictions)
 
 
 if __name__ == '__main__':
